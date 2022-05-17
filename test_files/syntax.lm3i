@@ -11,7 +11,7 @@ drive(100°)
 // define wheel radius in cm
 wheel_radius = 5
 // drive 100cm by calculating wheel circumference and then the degree of motor rotation needed
-drive(100cm)
+drive(100cm) //
 
 // define a function
 func my_func(args){
