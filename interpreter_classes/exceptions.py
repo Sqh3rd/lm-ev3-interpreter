@@ -4,3 +4,10 @@ class VariableError(Exception):
     
     def __str__(self):
         return self.text
+
+class RelationError(Exception):
+    def __init__(self, text):
+        self.text = text
+    
+    def __str__(self):
+        return self.text

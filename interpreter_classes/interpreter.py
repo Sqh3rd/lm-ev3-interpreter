@@ -1,3 +1,6 @@
+from .comment import Comment, Empty_Comment
+from .block import Function_Block, Class_Block
+
 class Interpreter:
     def __init__(self):
         # Will maybe be customizable
@@ -5,7 +8,6 @@ class Interpreter:
 
         # Lines taken from the code
         self.lines = []
-        self.temp_lines = []
         self.instructions = []
         self.comments = []
 
@@ -21,35 +23,53 @@ class Interpreter:
     def read_file(self, path):
         with open(path, 'r') as f:
             for l in f:
-                self.temp_lines.append(l)
+                self.lines.append(l)
     
     def sort_lines(self):
-        for i, line in enumerate(self.temp_lines):
+        for i, line in enumerate(self.lines):
             line_number = i + 1
+
             if 'func' in line:
-                self.function_pointer.append(line_number)
+                add_func_pointer = True
+                if self.comment_identifier in line and 'func' in line.split(self.comment_identifier)[1]:
+                    add_func_pointer = False
+                if add_func_pointer:
+                    self.function_pointer.append(i)
+
             elif 'class' in line:
-                self.class_pointer.append(line_number)
+                add_class_pointer = True
+                if self.comment_identifier in line and 'class' in line.split(self.comment_identifier)[1]:
+                    add_class_pointer = False
+                if add_class_pointer:
+                    self.class_pointer.append(i)
             
-            if '//' in line:
+            if self.comment_identifier in line:
                 c = line.split(self.comment_identifier)[1].strip()
                 if c:
                     self.comments.append(Comment(line_number, c, self.comment_identifier))
                 else:
                     self.comments.append(Empty_Comment(line_number))
-
-class Comment:
-    def __init__(self, line, content, comment_identifier):
-        self.line = line
-        self.content = content
-        self.prefix = comment_identifier
     
-    def __str__(self):
-        return f'Comment on line {self.line}:\n\t\'{self.prefix} {self.content}\'\n'
+    def create_functions(self, function_pointers):
+        for pointer in function_pointers:
+            current_line = self.lines[pointer]
 
-class Empty_Comment(Comment):
-    def __init__(self, line):
-        self.line = line
-    
-    def __str__(self):
-        return f'Empty comment on line {self.line}\n'
+            name = current_line.removeprefix('func')
+            name = name.split('(')[0].strip()
+            name = name.replace(' ', '_')
+
+            params = current_line.split('(')[1].split(')')[0]
+            params = params.split(',')
+
+            instructions = []
+            depth = 0
+            for line in self.lines[pointer + 1:]:
+                if '{' in line:
+                    depth += 1
+                if '}' in line:
+                    depth -= 1
+                if depth < 0:
+                    break
+                instructions.append(line)
+            
+            self.functions[name] = Function_Block(name, params, instructions)

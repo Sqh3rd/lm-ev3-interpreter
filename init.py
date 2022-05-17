@@ -27,11 +27,17 @@ def parse_args(argv):
     inter = Interpreter()
     inter.read_file(arg_input)
     inter.sort_lines()
+    inter.create_functions(inter.function_pointer)
+
+    if not arg_output:
+        arg_output = f"{arg_input.split('.')[-2]}.py"
     
     print(f'input: {arg_input}')
     print(f'output: {arg_output}')
-    comments = "\n".join([str(c) for c in inter.comments])
-    print(f'comments:\n{comments}')
+    print(f'comments: {len(inter.comments)}')
+    functions = '\n'.join([str(inter.functions[f]) for f in inter.functions])
+    print(f'functions: {len(inter.functions)}\n{functions}')
+    print(f'classes: {len(inter.classes)}')
 
 if __name__ == "__main__":
     parse_args(sys.argv)
