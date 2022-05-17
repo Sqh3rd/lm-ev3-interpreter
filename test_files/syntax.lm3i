@@ -1,0 +1,22 @@
+// define variables
+string = "abcdefghijklmnopqrstuvwxyz"
+number = 0123456789
+list = [el1, el2]
+
+// define drive base
+drive_base = BC
+// turn the motors of the drive base for 100° each
+drive(100°)
+
+// define wheel radius in cm
+wheel_radius = 5
+// drive 100cm by calculating wheel circumference and then the degree of motor rotation needed
+drive(100cm)
+
+// define a function
+func my_func(args){
+
+}
+
+// execute another file
+exec file.lm3i
