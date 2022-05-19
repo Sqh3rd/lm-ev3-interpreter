@@ -1,3 +1,4 @@
+from msilib.schema import Class
 from .comment import Comment, Empty_Comment
 from .block import Function_Block, Class_Block
 
@@ -55,21 +56,68 @@ class Interpreter:
             current_line = self.lines[pointer]
 
             name = current_line.removeprefix('func')
+            if not '(' in name:
+                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\t\'(\' expected after function name!')
             name = name.split('(')[0].strip()
             name = name.replace(' ', '_')
 
+            if not ')' in current_line:
+                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\t\')\' expected after function parameters!')
             params = current_line.split('(')[1].split(')')[0]
             params = params.split(',')
 
             instructions = []
             depth = 0
-            for line in self.lines[pointer + 1:]:
+            if '{' in current_line:
+                depth = 1
+
+            function_is_concluded = False
+
+            for line in self.lines[pointer:]:
                 if '{' in line:
                     depth += 1
                 if '}' in line:
                     depth -= 1
-                if depth < 0:
+                if line != current_line:
+                    instructions.append(line)
+                if depth == 0:
+                    function_is_concluded = True
                     break
-                instructions.append(line)
             
+            if not function_is_concluded:
+                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\tFunction \'{name}\' is never concluded!')
             self.functions[name] = Function_Block(name, params, instructions)
+    
+    def create_classes(self, class_pointers):
+        for pointer in class_pointers:
+            current_line = self.lines[pointer]
+
+            name = current_line.removeprefix('class')
+            depth = 0
+            if '{' in name:
+                depth = 1
+                name = name.split('{')[0]
+            name = name.strip()
+
+            class_is_concluded = False
+
+            functions = []
+
+            for line in self.lines[pointer + 1]:
+                if '{' in line:
+                    depth += 1
+                if '}' in line:
+                    depth -= 1
+                if 'func' in line:
+                    f_name = current_line.removeprefix('func')
+                    f_name = f_name.split('(')[0].strip()
+                    f_name = f_name.replace(' ', '_')
+                    functions.append(self.functions[f_name])
+                if depth == 0:
+                    class_is_concluded = True
+                    break
+
+            if not class_is_concluded:
+                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\Class \'{name}\' is never concluded!')
+
+            self.classes[name] = Class_Block(name, functions)

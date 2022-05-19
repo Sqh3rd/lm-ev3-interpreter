@@ -30,13 +30,10 @@ def parse_args(argv):
     inter.create_functions(inter.function_pointer)
 
     if not arg_output:
-        arg_output = f"{arg_input.split('.')[-2]}.py"
+        arg_output = f"{arg_input.removesuffix(arg_input.split('.')[-1])}py"
     
-    print(f'input: {arg_input}')
-    print(f'output: {arg_output}')
     print(f'comments: {len(inter.comments)}')
-    functions = '\n'.join([str(inter.functions[f]) for f in inter.functions])
-    print(f'functions: {len(inter.functions)}\n{functions}')
+    print(f'functions: {len(inter.functions)}')
     print(f'classes: {len(inter.classes)}')
 
 if __name__ == "__main__":

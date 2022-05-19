@@ -14,7 +14,7 @@ wheel_radius = 5
 drive(100cm) //
 
 // define a function
-func my func(args){
+func my_func (args) {
 
 }
 
