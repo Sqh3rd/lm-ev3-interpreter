@@ -16,6 +16,7 @@ class Interpreter:
         self.functions = {}
         self.variables = {}
         self.classes = {}
+        self.conditionals = []
 
         # Pointers to lines from the code
         self.function_pointer = []
@@ -116,9 +117,67 @@ class Interpreter:
                     break
 
             if not class_is_concluded:
-                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\Class \'{name}\' is never concluded!')
+                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\tClass \'{name}\' is never concluded!')
 
             classes[name] = Class_Block(name, functions)
         return classes
 
-    # def create_conditionals(conditional_pointer):
+    def create_conditionals(conditional_pointer, lines):
+        conditionals = []
+        for pointer in conditional_pointer:
+            instructions = []
+
+            depth = 0
+            conditional_is_concluded = False
+
+            follow_up_pointer = []
+
+            if '{' in lines[pointer]:
+                depth = 1
+            for i, line in enumerate(lines[pointer + 1]):
+                if '{' in line:
+                    depth += 1
+                if '}' in line:
+                    depth -= 1
+                if 'else' in line:
+                    follow_up_pointer.append(pointer + 1 + i)
+                instructions.append(line)
+                if depth == 0:
+                    conditional_is_concluded = True
+                    break
+            
+            if not conditional_is_concluded:
+                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\tConditional \'if\' statement is never concluded!')
+            
+            for pointer in follow_up_pointer:
+                follow_up_instructions = []
+
+                follow_up_depth = 0
+                follow_up_conditional_is_concluded = False
+
+                name = lines[pointer]
+
+                condition = ''
+
+                if name.replace(' ', '').startswith('}'):
+                    name = name.split('}')[1]
+                if '(' in name:
+                    if not ')' in name:
+                        raise SyntaxError(f'SyntaxError on line {pointer+1}:\n\t\')\' expected after condition!')
+                    condition = name.split('(')[1].split(')')[0]
+                    name = name.split('(')[0]
+
+                if '{' in lines[pointer]:
+                    follow_up_depth = 1
+                for line in lines[pointer + 1]:
+                    if '{' in line:
+                        follow_up_depth += 1
+                    if '}' in line:
+                        follow_up_depth -= 1
+                    follow_up_instructions.append(line)
+                    if follow_up_depth == 0:
+                        follow_up_conditional_is_concluded = True
+                        break
+
+            if not follow_up_conditional_is_concluded:
+                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\tFollow up Conditional \'{name}\' statement is never concluded!')

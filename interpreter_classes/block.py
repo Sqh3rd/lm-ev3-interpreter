@@ -7,8 +7,13 @@ class Block:
         self.kind = kind
 
 class Conditional_Block(Block):
-    def __init__(self, instructions, condition):
+    def __init__(self, instructions, condition, follow_up_conditionals):
         super().__init__('Conditional', None, instructions, condition, 'Condition')
+        self.follow_up_conditionals = follow_up_conditionals
+
+class Follow_Up_Conditional_Block(Conditional_Block):
+    def __init__(self, instructions, condition):
+        super().__init__(instructions, condition)
 
 class Function_Block(Block):
     def __init__(self, name, params, instructions):
