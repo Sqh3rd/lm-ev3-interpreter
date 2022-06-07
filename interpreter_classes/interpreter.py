@@ -1,4 +1,3 @@
-from msilib.schema import Class
 from .comment import Comment, Empty_Comment
 from .block import Function_Block, Class_Block
 
