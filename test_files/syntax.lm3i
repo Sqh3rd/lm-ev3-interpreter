@@ -21,11 +21,11 @@ func my_func (args) {
 // execute another file
 exec file.lm3i
 
-//if number > 1
-//{
+if number > 1
+{
 
-//}
-//else
-//{
+}
+else
+{
 
-//}
+}

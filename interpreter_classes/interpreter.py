@@ -133,7 +133,7 @@ class Interpreter:
 
             if '{' in lines[pointer]:
                 depth = 1
-            for i, line in enumerate(lines[pointer + 1]):
+            for i, line in enumerate(lines[pointer + 1:]):
                 if '{' in line:
                     depth += 1
                 if '}' in line:
@@ -178,5 +178,5 @@ class Interpreter:
                         follow_up_conditional_is_concluded = True
                         break
 
-            if not follow_up_conditional_is_concluded:
-                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\tFollow up Conditional \'{name}\' statement is never concluded!')
+                if not follow_up_conditional_is_concluded:
+                    raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\tFollow up Conditional \'{name}\' statement is never concluded!')
