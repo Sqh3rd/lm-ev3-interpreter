@@ -1,5 +1,6 @@
 from .comment import Comment, Empty_Comment
 from .block import Function_Block, Class_Block
+from .exceptions import KeywordError, RelationError, VariableError, SyntaxError
 
 class Interpreter:
     def __init__(self):
@@ -28,16 +29,29 @@ class Interpreter:
                 self.lines.append(l)
     
     def sort_lines(self):
+        depth = 0
         for i, line in enumerate(self.lines):
             line_number = i + 1
+            stripped_line = line.strip()
+            line_split = stripped_line.split(' ')
 
-            if 'func' in line and not (self.comment_identifier in line and 'func' in line.split(self.comment_identifier)[1]):
-                self.function_pointer.append(i)
+            if stripped_line.startswith('func ') and not (self.comment_identifier in stripped_line and 'func' in stripped_line.split(self.comment_identifier)[1]):
+                func_def_err = KeywordError(line_number, 'Function definitions follow this syntax: func func_name(<args>){ }')
+                if len(line_split) < 2:
+                    func_def_err.print_err()
+                elif ('(' in line_split[1] and line_split[1][0] != '(') or (len(line_split) > 2 and '(' in line_split[2]):
+                    self.function_pointer.append(i)
+                else:
+                    func_def_err.print_err()
 
-            elif 'class' in line and not (self.comment_identifier in line and 'class' in line.split(self.comment_identifier)[1]):
-                self.class_pointer.append(i)
+            elif stripped_line.startswith('class ') and not (self.comment_identifier in line and 'class' in line.split(self.comment_identifier)[1]):
+                class_def_err = KeywordError(line_number, 'Class definitions follow this syntax: class Class_name { }')
+                if len(line_split) < 2 or not line_split[1].isalpha():
+                    class_def_err.print_err()
+                else:
+                    self.class_pointer.append(i)
             
-            elif 'if' in line and not (self.comment_identifier in line and 'if' in line.split(self.comment_identifier)[1]):
+            elif stripped_line.startswith('if') and not (self.comment_identifier in line and 'if' in line.split(self.comment_identifier)[1]):
                 self.conditional_pointer.append(i)
 
             if self.comment_identifier in line:
