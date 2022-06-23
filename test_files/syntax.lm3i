@@ -5,22 +5,27 @@ list = [el1, el2]
 list[] = 5
 
 // define drive base
-drive_base = BC
+DRIVE_BASE = BC
+
 // turn the motors of the drive base for 100° each
-drive(100°)
+
+await drive(100°) // await is used to await the completion of the drive() function
+drive(100U)
 
 // define wheel radius in cm
-wheel_radius = 5
+WHEEL_RADIUS = 5
 // drive 100cm by calculating wheel circumference and then the degree of motor rotation needed
 drive(100cm) //
 
 // define a function
-func my_func (args) {
+func my_func (args {
     drive()
 }
 
 // execute another file
 exec file.lm3i
+
+sleep(5) // in seconds
 
 if number > 1
 {

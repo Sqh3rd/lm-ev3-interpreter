@@ -42,7 +42,9 @@ class Interpreter:
                 elif ('(' in line_split[1] and line_split[1][0] != '(') or (len(line_split) > 2 and '(' in line_split[2]):
                     self.function_pointer.append(i)
                 else:
-                    func_def_err.print_err()
+                    if not ')' in line:
+                        SyntaxError(pointer + 1, f'\')\' expected after function parameters!').print_err()
+                    raise SyntaxError(f'SyntaxError on line {line_number}:\n\t\'(\' expected after function name!')
 
             elif stripped_line.startswith('class ') and not (self.comment_identifier in line and 'class' in line.split(self.comment_identifier)[1]):
                 class_def_err = KeywordError(line_number, 'Class definitions follow this syntax: class Class_name { }')
@@ -67,13 +69,10 @@ class Interpreter:
             current_line = lines[pointer]
 
             name = current_line.removeprefix('func')
-            if not '(' in name:
-                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\t\'(\' expected after function name!')
+
             name = name.split('(')[0].strip()
             name = name.replace(' ', '_')
 
-            if not ')' in current_line:
-                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\t\')\' expected after function parameters!')
             params = current_line.split('(')[1].split(')')[0]
             params = params.split(',')
 

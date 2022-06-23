@@ -37,6 +37,7 @@ def parse_args(argv):
     print(f'comments: {len(inter.comments)}')
     print(f'functions: {len(inter.functions)}')
     print(f'classes: {len(inter.classes)}')
+    # print(f'conditionals: {len(inter.conditionals)}')
 
 if __name__ == "__main__":
     parse_args(sys.argv)
