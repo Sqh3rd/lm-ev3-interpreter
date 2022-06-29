@@ -28,47 +28,59 @@ class Interpreter:
             for l in f:
                 self.lines.append(l)
     
-    def sort_lines(self):
+    def sort_lines(lines, comment_identifier):
+        function_pointer = []
+        class_pointer = []
+        conditional_pointer = []
+        comments = []
         depth = 0
-        for i, line in enumerate(self.lines):
+        for i, line in enumerate(lines):
             line_number = i + 1
             stripped_line = line.strip()
             line_split = stripped_line.split(' ')
 
-            if stripped_line.startswith('func ') and not (self.comment_identifier in stripped_line and 'func' in stripped_line.split(self.comment_identifier)[1]):
-                func_def_err = KeywordError(line_number, 'Function definitions follow this syntax: func func_name(<args>){ }')
-                if len(line_split) < 2:
-                    func_def_err.print_err()
-                elif ('(' in line_split[1] and line_split[1][0] != '(') or (len(line_split) > 2 and '(' in line_split[2]):
-                    self.function_pointer.append(i)
-                else:
-                    if not ')' in line:
-                        SyntaxError(pointer + 1, f'\')\' expected after function parameters!').print_err()
-                    raise SyntaxError(f'SyntaxError on line {line_number}:\n\t\'(\' expected after function name!')
+            if depth == 0:
+                if stripped_line.startswith('func ') and not (comment_identifier in stripped_line and 'func' in stripped_line.split(comment_identifier)[1]):
+                    func_def_err = KeywordError(line_number, 'Function definitions follow this syntax: func func_name(<args>){ }')
+                    if len(line_split) < 2:
+                        func_def_err.print_err()
+                    elif ('(' in line_split[1] and line_split[1][0] != '(') or (len(line_split) > 2 and '(' in line_split[2]) and ')' in line:
+                        function_pointer.append(i)
+                    else:
+                        if not ')' in line:
+                            SyntaxError(line_number, f'\')\' expected after function parameters!').print_err()
+                        SyntaxError(line_number, f'\'(\' expected after function name!').print_err
 
-            elif stripped_line.startswith('class ') and not (self.comment_identifier in line and 'class' in line.split(self.comment_identifier)[1]):
-                class_def_err = KeywordError(line_number, 'Class definitions follow this syntax: class Class_name { }')
-                if len(line_split) < 2 or not line_split[1].isalpha():
-                    class_def_err.print_err()
-                else:
-                    self.class_pointer.append(i)
+                elif stripped_line.startswith('class ') and not (comment_identifier in line and 'class' in line.split(comment_identifier)[1]):
+                    class_def_err = KeywordError(line_number, 'Class definitions follow this syntax: class Class_name { }')
+                    if len(line_split) < 2 or not line_split[1].isalpha():
+                        class_def_err.print_err()
+                    else:
+                        class_pointer.append(i)
+                
+                elif stripped_line.startswith('if') and not (comment_identifier in line and 'if' in line.split(comment_identifier)[1]):
+                    conditional_pointer.append(i)
+
+                if comment_identifier in line:
+                    com = line.split(comment_identifier)[1].strip()
+                    if com:
+                        comments.append(Comment(line_number, com, comment_identifier))
+                    else:
+                        comments.append(Empty_Comment(line_number))
             
-            elif stripped_line.startswith('if') and not (self.comment_identifier in line and 'if' in line.split(self.comment_identifier)[1]):
-                self.conditional_pointer.append(i)
+            if '{' in line:
+                depth += 1
+            if '}' in line:
+                depth -= 1
 
-            if self.comment_identifier in line:
-                com = line.split(self.comment_identifier)[1].strip()
-                if com:
-                    self.comments.append(Comment(line_number, com, self.comment_identifier))
-                else:
-                    self.comments.append(Empty_Comment(line_number))
+        return function_pointer, class_pointer, conditional_pointer, comments
     
     def create_functions(function_pointers, lines):
         functions = {}
         for pointer in function_pointers:
             current_line = lines[pointer]
 
-            name = current_line.removeprefix('func')
+            name = current_line.strip().removeprefix('func')
 
             name = name.split('(')[0].strip()
             name = name.replace(' ', '_')
@@ -98,12 +110,12 @@ class Interpreter:
             functions[name] = Function_Block(name, params, instructions)
         return functions
 
-    def create_classes(class_pointers, lines, functions):
+    def create_classes(class_pointers, lines):
         classes = {}
         for pointer in class_pointers:
             current_line = lines[pointer]
 
-            name = current_line.removeprefix('class')
+            name = current_line.strip().removeprefix('class')
             depth = 0
             if '{' in name:
                 depth = 1
@@ -119,11 +131,6 @@ class Interpreter:
                     depth += 1
                 if '}' in line:
                     depth -= 1
-                if 'func' in line:
-                    f_name = current_line.removeprefix('func')
-                    f_name = f_name.split('(')[0].strip()
-                    f_name = f_name.replace(' ', '_')
-                    functions.append(functions[f_name])
                 if depth == 0:
                     class_is_concluded = True
                     break
@@ -193,3 +200,11 @@ class Interpreter:
 
                 if not follow_up_conditional_is_concluded:
                     raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\tFollow up Conditional \'{name}\' statement is never concluded!')
+    
+    def parse(self):
+        output = []
+        for cl in self.classes:
+            output.append(self.classes[cl].parse())
+        for fu in self.functions:
+            output.append(self.functions[fu].parse())
+        return '\n'.join(output)

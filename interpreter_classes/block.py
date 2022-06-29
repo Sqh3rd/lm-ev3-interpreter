@@ -1,14 +1,37 @@
 class Block:
-    def __init__(self, name, params, instructions, condition, kind):
+    def __init__(self, name, params, instructions, condition, kind, depth):
         self.name = name
-        self.params = params
-        self.instructions = instructions
+        self.params = [param.strip() for param in params]
+        self.instructions = [ins.strip() for ins in instructions]
         self.condition = condition
         self.kind = kind
+        self.depth = depth
+        self.functions = []
+        self.classes = []
+        self.conditionals = []
+    
+    def append_nested_blocks(self, functions, classes, conditionals):
+        self.functions = functions
+        self.classes = classes
+        self.conditionals = conditionals
+    
+    def parse(self):
+        indents = (self.depth + 1) * '\t'
+        ins = f'\n{indents}'.join(self.instructions)
+        ins = ins.replace('{', '').replace('}', '')
+        params = ', '.join(self.params)
+        funcs = f'\n{indents}'.join([func.parse() for func in self.functions])
+
+        match(self.kind):
+            case 'Function':
+                return f'def {self.name} ({params}):\n\t{ins}'
+            
+            case 'Class':
+                return f'class {self.name}:\n\t{ins}'
 
 class Conditional_Block(Block):
     def __init__(self, instructions, condition, follow_up_conditionals):
-        super().__init__('Conditional', None, instructions, condition, 'Condition')
+        super().__init__('If', None, instructions, condition, 'Condition')
         self.follow_up_conditionals = follow_up_conditionals
 
 class Follow_Up_Conditional_Block(Conditional_Block):

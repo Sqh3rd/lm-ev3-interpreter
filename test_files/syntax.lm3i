@@ -18,8 +18,13 @@ WHEEL_RADIUS = 5
 drive(100cm) //
 
 // define a function
-func my_func (args {
+func my_func (args) {
     drive()
+}
+
+func other_func (args, args2, **argv){
+    func nested_functions(args){}
+    // do stuff
 }
 
 // execute another file
