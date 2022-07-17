@@ -20,7 +20,7 @@ class Block:
         ins = f'\n{indents}'.join(self.instructions)
         ins = ins.replace('{', '').replace('}', '')
         params = ', '.join(self.params)
-        funcs = f'\n{indents}'.join([func.parse() for func in self.functions])
+        funcs = f'\n{indents}'.join([self.functions[func].parse() for func in self.functions])
 
         match(self.kind):
             case 'Function':
@@ -30,8 +30,8 @@ class Block:
                 return f'class {self.name}:\n\t{ins}'
 
 class Conditional_Block(Block):
-    def __init__(self, instructions, condition, follow_up_conditionals):
-        super().__init__('If', None, instructions, condition, 'Condition')
+    def __init__(self, instructions, condition, follow_up_conditionals, depth):
+        super().__init__('If', None, instructions, condition, 'Condition', depth)
         self.follow_up_conditionals = follow_up_conditionals
 
 class Follow_Up_Conditional_Block(Conditional_Block):
@@ -39,8 +39,8 @@ class Follow_Up_Conditional_Block(Conditional_Block):
         super().__init__(instructions, condition)
 
 class Function_Block(Block):
-    def __init__(self, name, params, instructions):
-        super().__init__(name, params, instructions, None, 'Function')
+    def __init__(self, name, params, instructions, depth):
+        super().__init__(name, params, instructions, None, 'Function', depth)
 
     def __str__(self):
         return f'Name: {self.name}\nParams: {", ".join(self.params)}\nInstructions: {len(self.instructions)}'
@@ -48,4 +48,4 @@ class Function_Block(Block):
 # Not sure if it will be implemented
 class Class_Block(Block):
     def __init__(self, name, functions):
-        super().__init__(name, None, functions, None, 'Class')
+        super().__init__(name, None, functions, None, 'Class', 0)

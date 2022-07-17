@@ -2,7 +2,7 @@
 string = "abcdefghijklmnopqrstuvwxyz"
 number = 0123456789
 list = [el1, el2]
-list[] = 5
+list += 5
 
 // define drive base
 DRIVE_BASE = BC
@@ -26,6 +26,8 @@ func other_func (args, args2, **argv){
     func nested_functions(args){}
     // do stuff
 }
+
+func empty_func (){}
 
 // execute another file
 exec file.lm3i
