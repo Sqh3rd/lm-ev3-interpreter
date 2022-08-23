@@ -1,3 +1,4 @@
+from datetime import datetime
 from .comment import Comment, Empty_Comment
 from .block import Function_Block, Class_Block
 from .exceptions import KeywordError, RelationError, VariableError, SyntaxError
@@ -28,7 +29,21 @@ class Interpreter:
             for l in f:
                 self.lines.append(l)
     
-    def sort_lines(lines, comment_identifier):
+    def sort_lines(lines: list, comment_identifier: str):
+        """
+        Sort through the given lines and return pointers.
+
+                Parameters:
+                        lines (list):                   The lines that are sorted
+                        comment_identifier (string):    The comment identifier used
+
+                Returns:
+                        function_pointer (list):        A list that stores the line numbers where the 'func' keyword is used
+                        class_pointer (list):           A list that stores the line numbers where the 'class' keyword is used
+                        conditional_pointer (list):     A list that stores the line numbers where the 'if' keyword is used
+                        comments (list):                A list that stores the comments identified with the comment_identifier
+        """
+
         function_pointer = []
         class_pointer = []
         conditional_pointer = []
@@ -75,7 +90,7 @@ class Interpreter:
 
         return function_pointer, class_pointer, conditional_pointer, comments
     
-    def create_functions(function_pointers, lines):
+    def create_functions(function_pointers: list, lines: list, depth: int, start_line_number: int):
         functions = {}
         for pointer in function_pointers:
             current_line = lines[pointer]
@@ -89,56 +104,58 @@ class Interpreter:
             params = params.split(',')
 
             instructions = []
-            depth = 0
+            c_depth = 0
             if '{' in current_line:
-                depth = 1
+                c_depth = 1
 
             function_is_concluded = False
 
             for line in lines[pointer + 1:]:
+                if c_depth == 1:
+                    instructions.append(line)
                 if '{' in line:
-                    depth += 1
+                    c_depth += 1
                 if '}' in line:
-                    depth -= 1
-                instructions.append(line)
-                if depth == 0:
+                    c_depth -= 1
+                if c_depth == 0:
                     function_is_concluded = True
                     break
             
             if not function_is_concluded:
-                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\tFunction \'{name}\' is never concluded!')
-            functions[name] = Function_Block(name, params, instructions)
+                SyntaxError(start_line_number + pointer + 1, f'Function \'{name}\' is never concluded!').print_err()
+            functions[name] = Function_Block(name, params, instructions, depth, start_line_number + pointer)
         return functions
 
-    def create_classes(class_pointers, lines):
+    def create_classes(class_pointers, lines, depth, start_line_number):
         classes = {}
         for pointer in class_pointers:
             current_line = lines[pointer]
 
             name = current_line.strip().removeprefix('class')
-            depth = 0
+            c_depth = 0
             if '{' in name:
-                depth = 1
+                c_depth = 1
                 name = name.split('{')[0]
-            name = name.strip()
 
             class_is_concluded = False
 
-            functions = []
+            instructions = []
 
-            for line in lines[pointer + 1]:
+            for line in lines[pointer + 1:]:
+                if c_depth == 1:
+                    instructions.append(line)
                 if '{' in line:
-                    depth += 1
+                    c_depth += 1
                 if '}' in line:
-                    depth -= 1
-                if depth == 0:
+                    c_depth -= 1
+                if c_depth == 0:
                     class_is_concluded = True
                     break
 
             if not class_is_concluded:
-                raise SyntaxError(f'SyntaxError on line {pointer + 1}:\n\tClass \'{name}\' is never concluded!')
+                SyntaxError(pointer + 1, f'Class \'{name}\' is never concluded!').print_err()
 
-            classes[name] = Class_Block(name, functions)
+            classes[name] = Class_Block(name, instructions, depth, start_line_number + pointer)
         return classes
 
     def create_conditionals(conditional_pointer, lines):
@@ -203,6 +220,7 @@ class Interpreter:
     
     def parse(self):
         output = []
+        output.append(f'# Parsed: {datetime.now()}')
         for cl in self.classes:
             output.append(self.classes[cl].parse())
         for fu in self.functions:

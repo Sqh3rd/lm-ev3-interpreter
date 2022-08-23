@@ -20,11 +20,23 @@ drive(100cm) //
 // define a function
 func my_func (args) {
     drive()
+//    func asdf(){
+
+//    }
 }
 
 func other_func (args, args2, **argv){
-    func nested_functions(args){}
-    // do stuff
+}
+
+class ABC {
+    var a = 5
+    func abc () {
+        
+    }
+}
+
+func abc () {
+
 }
 
 // execute another file
