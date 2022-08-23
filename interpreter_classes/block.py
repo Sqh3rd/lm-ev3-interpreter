@@ -1,3 +1,6 @@
+from interpreter_classes.interpreter import Interpreter
+
+
 class Block:
     def __init__(self, name, params, instructions, condition, kind, depth, line_of_decleration):
         self.name = name
@@ -28,6 +31,10 @@ class Block:
         self.functions = []
         self.classes = []
         self.conditionals = []
+    
+    def sort_and_save(self):
+        temp_f, temp_cl, temp_co, temp_c = Interpreter.sort_lines(self.instructions)
+        self.functions = Interpreter.create_functions()
     
     def parse(self):
         indents = (self.depth + 1) * '\t'
