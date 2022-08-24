@@ -10,10 +10,11 @@ def interpret(arg_input, arg_output):
     start = datetime.now()
     inter = Interpreter()
     inter.read_file(arg_input)
-    inter.function_pointer, inter.class_pointer, inter.conditional_pointer, inter.comments = Interpreter.sort_lines(inter.lines, inter.comment_identifier)
+    inter.function_pointer, inter.class_pointer, inter.conditional_pointer, inter.comments, new_lines = Interpreter.sort_lines(inter.lines, inter.comment_identifier)
     inter.functions = Interpreter.create_functions(inter.function_pointer, inter.lines, 0, 1)
     inter.classes = Interpreter.create_classes(inter.class_pointer, inter.lines, 0, 1)
     inter.conditionals = Interpreter.create_conditionals(inter.conditional_pointer, inter.lines)
+    print(new_lines)
 
     for func in inter.functions:
         func = inter.functions[func]
@@ -23,6 +24,13 @@ def interpret(arg_input, arg_output):
         for e in temp_f:
             exceptions.SyntaxError(func.line_of_decleration + e + 1, 'Cannot declare function inside function!\nNo nested function.\nCode like a sane person or leave it be.').print_err()
         func.append_nested_blocks(Interpreter.create_conditionals(temp_con, func.instructions))
+
+    for cl in inter.classes:
+        cl = inter.classes[cl]
+        temp_f, temp_cl, temp_con, temp_com = Interpreter.sort_lines(cl.instructions, inter.comment_identifier)
+        for e in temp_cl:
+            exceptions.SyntaxError(cl.line_of_decleration + e + 1, 'WHAT IN THE ACTUAL FUCK MAN').print_err()
+        cl.functions = Interpreter.create_functions(temp_f, cl.instructions, cl.depth + 1, cl.line_of_decleration)
 
     if not arg_output:
         arg_output = f"{arg_input.removesuffix(arg_input.split('.')[-1])}py"

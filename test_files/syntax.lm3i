@@ -30,16 +30,16 @@ func other_func (args, args2, **argv){
 
 class ABC {
     var a = 5
-    func abc () {
-        
-    }
+    func abc () {}
 }
 
 func abc () {
 
 }
 
-func empty_func (){}
+func empty_func (){
+
+}
 
 // execute another file
 exec file.lm3i
