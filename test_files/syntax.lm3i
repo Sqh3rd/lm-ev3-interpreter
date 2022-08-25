@@ -20,14 +20,26 @@ drive(100cm) //
 // define a function
 func my_func (args) {
     drive()
+//    func asdf(){
+
+//    }
 }
 
 func other_func (args, args2, **argv){
-    func nested_functions(args){}
-    // do stuff
 }
 
-func empty_func (){}
+class ABC {
+    var a = 5
+    func abc () {}
+}
+
+func abc () {
+
+}
+
+func empty_func (){
+
+}
 
 // execute another file
 exec file.lm3i
